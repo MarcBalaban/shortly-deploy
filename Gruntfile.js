@@ -3,6 +3,13 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        separator: ';'
+      },
+      dist: {
+        src: ['public/client/*.js'],
+        dest: 'public/dist/build.js'
+      }
     },
 
     mochaTest: {
@@ -21,12 +28,19 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        mangle: false
+      },
+      my_target: {
+        files: {'public/dist/build.min.js': 'public/dist/build.js'}
+      }
     },
 
     jshint: {
-      files: [
-        // Add filespec list here
-      ],
+      files: {
+        beforeconcat: ['public/client/*.js'],
+        afterconcat: ['public/dist/build.js']
+      },
       options: {
         force: 'true',
         jshintrc: '.jshintrc',
@@ -94,18 +108,20 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'concat', 'jshint', 'uglify'
   ]);
 
   grunt.registerTask('upload', function(n) {
-    if(grunt.option('prod')) {
-      // add your production server task here
+    if(!grunt.option('dev')) {
+      grunt.task.run(['deploy']);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
+    console.log(process.env.NODE_ENV);
   });
 
   grunt.registerTask('deploy', [
-    // add your deploy tasks here
+    'test', 'build'
   ]);
 
 
